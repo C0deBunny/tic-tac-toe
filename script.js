@@ -1,7 +1,11 @@
 const gameBoard = (function () {
+	const cells = document.querySelectorAll(".cell")
+	const statusText = document.getElementById("status")
+
 	let board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
 
 	const getBoard = () => board
+	const getCells = () => cells
 
 	const drawCell = (index, marker) => {
 		if (index >= 0 && index < board.length && board[index] === " ") {
@@ -13,30 +17,43 @@ const gameBoard = (function () {
 		board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
 	}
 
+	const displayBoard = () => {
+		cells.forEach((cell, index) => {
+			cell.textContent = board[index]
+		})
+	}
+
+	const displayStatusText = (text) => {
+		statusText = text
+	}
+
+	// console
 	const printBoard = () => {
 		console.log(`[${board[0]}] [${board[1]}] [${board[2]}]\n[${board[3]}] [${board[4]}] [${board[5]}]\n[${board[6]}] [${board[7]}] [${board[8]}]`)
 	}
 
-	return { getBoard, drawCell, resetBoard, printBoard }
+	return { getBoard, getCells, displayStatusText, drawCell, resetBoard, displayBoard, printBoard }
 })()
 
-const createPlayer = function (name, marker) {
-	return {
-		getName: () => name,
-		getMarker: () => marker,
+const player = (() => {
+	const createPlayer = function (name, marker) {
+		return {
+			getName: () => name,
+			getMarker: () => marker,
+		}
 	}
-}
+
+	return { createPlayer }
+})()
 
 // Temporary players
-const player1 = createPlayer("Usagi", "O")
-const player2 = createPlayer("Apple Toast", "X")
+const player1 = player.createPlayer("Usagi", "O")
+const player2 = player.createPlayer("Apple Toast", "X")
 
 const gameController = (function () {
-	let playerTurn = player1
-
-	const swapTurn = () => {
-		playerTurn === player1 ? (playerTurn = player2) : (playerTurn = player1)
-	}
+	let firstTurn = player1
+	let currentPlayer
+	let gameActive
 
 	const winConditions = [
 		[0, 1, 2], // Row 1
@@ -49,6 +66,38 @@ const gameController = (function () {
 		[2, 4, 6], // Diagonal TR-BL
 	]
 
+	const startGame = () => {
+		gameActive = true
+		currentPlayer = firstTurn
+
+		gameBoard.resetBoard()
+		gameBoard.displayBoard()
+
+		// console
+		console.log("Start New Game!")
+		gameBoard.printBoard()
+
+		// while (true) {
+		// 	let move = getValidMove(currentPlayer)
+		// 	gameBoard.drawCell(move, currentPlayer.getMarker())
+		// 	gameBoard.printBoard()
+
+		// 	if (checkWin()) {
+		// 		console.log(`${currentPlayer.getName()} Won!`)
+		// 		break
+		// 	}
+	}
+
+	gameBoard.getCells().forEach((cell) => cell.addEventListener("click", handleClick))
+	function handleClick(cell) {
+		const index = cell.target.dataset.index
+		const board = gameBoard.getBoard()
+		// check valid move > move > displayBoard > CheckWin > SwapTurn
+		if (board[index] !== " " && !gameActive) return
+		board[index] = currentPlayer
+		e.target.textContent = currentPlayer
+	}
+
 	const checkWin = () => {
 		const board = gameBoard.getBoard()
 
@@ -56,11 +105,16 @@ const gameController = (function () {
 			const [a, b, c] = condition
 
 			if (board[a] !== " " && board[a] == board[b] && board[b] == board[c]) {
-				return board[a]
+				gameBoard.displayStatusText(`${currentPlayer.getName} Wins!`)
+				gameActive = false
+				return
 			}
 		}
 
-		return null
+		if (!board.includes(" ")) {
+			gameBoard.displayStatusText("It's a draw!")
+			gameActive = false
+		}
 	}
 
 	const getValidMove = (player) => {
@@ -80,39 +134,11 @@ const gameController = (function () {
 		return index
 	}
 
-	const startGame = () => {
-		// starts a new game
-		gameBoard.resetBoard()
-		console.log("Start New Game!")
-		gameBoard.printBoard()
-
-		let currentPlayer = playerTurn
-		const MAX_TURNS = 9
-		let turn = 0
-
-		while (true) {
-			let move = getValidMove(currentPlayer)
-			gameBoard.drawCell(move, currentPlayer.getMarker())
-			gameBoard.printBoard()
-
-			if (checkWin()) {
-				console.log(`${currentPlayer.getName()} Won!`)
-				break
-			}
-
-			turn++
-			if (turn >= MAX_TURNS) {
-				console.log("It's a Tie!")
-				break
-			}
-
-			console.log("-------------------")
-
-			currentPlayer === player1 ? (currentPlayer = player2) : (currentPlayer = player1)
-		}
-
-		swapTurn()
+	const swapTurn = () => {
+		firstTurn === player1 ? (firstTurn = player2) : (firstTurn = player1)
 	}
 
-	return { startGame, checkWin }
+	return { startGame, handleClick }
 })()
+
+gameController.startGame()
