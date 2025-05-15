@@ -24,7 +24,7 @@ const gameBoard = (function () {
 	}
 
 	const displayStatusText = (text) => {
-		statusText = text
+		statusText.textContent = text
 	}
 
 	// console
@@ -43,17 +43,19 @@ const player = (() => {
 		}
 	}
 
-	return { createPlayer }
+	const getPlayer1 = () => createPlayer("Usagi", "O")
+
+	const getPlayer2 = () => createPlayer("Apple Toast", "X")
+
+	return { getPlayer1, getPlayer2 }
 })()
 
-// Temporary players
-const player1 = player.createPlayer("Usagi", "O")
-const player2 = player.createPlayer("Apple Toast", "X")
-
 const gameController = (function () {
+	const player1 = player.getPlayer1()
+	const player2 = player.getPlayer2()
 	let firstTurn = player1
-	let currentPlayer
-	let gameActive
+	let currentPlayer = firstTurn
+	let gameActive = false
 
 	const winConditions = [
 		[0, 1, 2], // Row 1
@@ -72,30 +74,28 @@ const gameController = (function () {
 
 		gameBoard.resetBoard()
 		gameBoard.displayBoard()
+		gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`)
 
 		// console
 		console.log("Start New Game!")
 		gameBoard.printBoard()
-
-		// while (true) {
-		// 	let move = getValidMove(currentPlayer)
-		// 	gameBoard.drawCell(move, currentPlayer.getMarker())
-		// 	gameBoard.printBoard()
-
-		// 	if (checkWin()) {
-		// 		console.log(`${currentPlayer.getName()} Won!`)
-		// 		break
-		// 	}
 	}
 
 	gameBoard.getCells().forEach((cell) => cell.addEventListener("click", handleClick))
 	function handleClick(cell) {
 		const index = cell.target.dataset.index
-		const board = gameBoard.getBoard()
-		// check valid move > move > displayBoard > CheckWin > SwapTurn
-		if (board[index] !== " " && !gameActive) return
-		board[index] = currentPlayer
-		e.target.textContent = currentPlayer
+
+		if (!getValidMove(index)) return
+		gameBoard.drawCell(index, currentPlayer.getMarker())
+		gameBoard.displayBoard()
+
+		// console
+		gameBoard.printBoard()
+
+		if (checkWin()) return
+
+		swapTurn()
+		gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`)
 	}
 
 	const checkWin = () => {
@@ -105,36 +105,36 @@ const gameController = (function () {
 			const [a, b, c] = condition
 
 			if (board[a] !== " " && board[a] == board[b] && board[b] == board[c]) {
-				gameBoard.displayStatusText(`${currentPlayer.getName} Wins!`)
+				gameBoard.displayStatusText(`${currentPlayer.getName()} Wins!`)
 				gameActive = false
-				return
+				swapFirstTurn()
+				return true
 			}
 		}
 
 		if (!board.includes(" ")) {
 			gameBoard.displayStatusText("It's a draw!")
 			gameActive = false
+			swapFirstTurn()
+			return true
 		}
 	}
 
-	const getValidMove = (player) => {
-		let index
+	const getValidMove = (index) => {
 		const board = gameBoard.getBoard()
 
-		while (true) {
-			index = parseInt(prompt(`${player.getName()}'s turn! [${player.getMarker()}] Choose a cell (0-8): `), 10)
-
-			if (!isNaN(index) && index >= 0 && index < 9 && board[index] === " ") {
-				break
-			} else {
-				alert("Invalid move. Choose a different cell")
-			}
+		if (!isNaN(index) && index >= 0 && index < 9 && board[index] === " " && gameActive === true) {
+			return index
 		}
 
-		return index
+		return null
 	}
 
 	const swapTurn = () => {
+		currentPlayer === player1 ? (currentPlayer = player2) : (currentPlayer = player1)
+	}
+
+	const swapFirstTurn = () => {
 		firstTurn === player1 ? (firstTurn = player2) : (firstTurn = player1)
 	}
 
