@@ -1,8 +1,11 @@
+const EMPTY = " "
+const BOARD_SIZE = 9
+
 const gameBoard = (function () {
 	const cells = document.querySelectorAll(".cell")
 	const statusText = document.getElementById("status")
 
-	let board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+	let board = Array(BOARD_SIZE).fill(EMPTY)
 
 	const getBoard = () => board
 	const getCells = () => cells
@@ -20,11 +23,17 @@ const gameBoard = (function () {
 	const displayBoard = () => {
 		cells.forEach((cell, index) => {
 			cell.textContent = board[index]
+			if (cell.textContent === "O") {
+				cell.style.color = "#4ba3c3"
+			} else {
+				cell.style.color = "#ff595e"
+			}
 		})
 	}
 
-	const displayStatusText = (text) => {
+	const displayStatusText = (text, color) => {
 		statusText.textContent = text
+		statusText.style.color = color
 	}
 
 	// console
@@ -36,16 +45,20 @@ const gameBoard = (function () {
 })()
 
 const player = (() => {
-	const createPlayer = function (name, marker) {
+	const createPlayer = function (name, marker, color) {
 		return {
 			getName: () => name,
 			getMarker: () => marker,
+			getColor: () => color,
 		}
 	}
 
-	const getPlayer1 = () => createPlayer("Usagi", "O")
+	// create players from DOM
+	const getPlayer1 = () => createPlayer("Usagi", "O", "#4ba3c3")
 
-	const getPlayer2 = () => createPlayer("Apple Toast", "X")
+	const getPlayer2 = () => createPlayer("Apple Toast", "X", "#ff595e")
+
+	// Update player
 
 	return { getPlayer1, getPlayer2 }
 })()
@@ -68,22 +81,28 @@ const gameController = (function () {
 		[2, 4, 6], // Diagonal TR-BL
 	]
 
+	const init = () => {
+		gameBoard.getCells().forEach((cell) => cell.addEventListener("click", handleClick))
+		// addEventListener("change", (event) => {})
+
+		startGame()
+	}
+
 	const startGame = () => {
 		gameActive = true
 		currentPlayer = firstTurn
 
 		gameBoard.resetBoard()
 		gameBoard.displayBoard()
-		gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`)
+		gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`, currentPlayer.getColor())
 
 		// console
 		console.log("Start New Game!")
 		gameBoard.printBoard()
 	}
 
-	gameBoard.getCells().forEach((cell) => cell.addEventListener("click", handleClick))
-	function handleClick(cell) {
-		const index = cell.target.dataset.index
+	function handleClick(event) {
+		const index = event.target.dataset.index
 
 		if (!getValidMove(index)) return
 		gameBoard.drawCell(index, currentPlayer.getMarker())
@@ -95,7 +114,7 @@ const gameController = (function () {
 		if (checkWin()) return
 
 		swapTurn()
-		gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`)
+		gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`, currentPlayer.getColor())
 	}
 
 	const checkWin = () => {
@@ -105,7 +124,7 @@ const gameController = (function () {
 			const [a, b, c] = condition
 
 			if (board[a] !== " " && board[a] == board[b] && board[b] == board[c]) {
-				gameBoard.displayStatusText(`${currentPlayer.getName()} Wins!`)
+				gameBoard.displayStatusText(`${currentPlayer.getName()} Wins!`, currentPlayer.getColor())
 				gameActive = false
 				swapFirstTurn()
 				return true
@@ -113,7 +132,7 @@ const gameController = (function () {
 		}
 
 		if (!board.includes(" ")) {
-			gameBoard.displayStatusText("It's a draw!")
+			gameBoard.displayStatusText("It's a draw!", "#70587c")
 			gameActive = false
 			swapFirstTurn()
 			return true
@@ -123,7 +142,7 @@ const gameController = (function () {
 	const getValidMove = (index) => {
 		const board = gameBoard.getBoard()
 
-		if (!isNaN(index) && index >= 0 && index < 9 && board[index] === " " && gameActive === true) {
+		if (!isNaN(index) && index >= 0 && index < BOARD_SIZE && board[index] === EMPTY && gameActive === true) {
 			return index
 		}
 
@@ -138,7 +157,7 @@ const gameController = (function () {
 		firstTurn === player1 ? (firstTurn = player2) : (firstTurn = player1)
 	}
 
-	return { startGame, handleClick }
+	return { init, startGame, handleClick }
 })()
 
-gameController.startGame()
+gameController.init()
