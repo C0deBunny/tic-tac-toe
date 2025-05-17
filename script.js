@@ -24,9 +24,9 @@ const gameBoard = (function () {
 		cells.forEach((cell, index) => {
 			cell.textContent = board[index]
 			if (cell.textContent === "O") {
-				cell.style.color = "#4ba3c3"
+				cell.style.color = player.getPlayer1().getColor()
 			} else {
-				cell.style.color = "#ff595e"
+				cell.style.color = player.getPlayer2().getColor()
 			}
 		})
 	}
@@ -48,23 +48,54 @@ const player = (() => {
 	const createPlayer = function (name, marker, color) {
 		return {
 			getName: () => name,
+			setName: (newName) => {
+				name = newName
+			},
+
 			getMarker: () => marker,
+
 			getColor: () => color,
+			setColor: (newColor) => {
+				color = newColor
+			},
 		}
 	}
 
-	// create players from DOM
-	const getPlayer1 = () => createPlayer("Usagi", "O", "#4ba3c3")
+	// Default players
+	const player1 = createPlayer("player 1", "O", "#4ba3c3")
+	const player2 = createPlayer("Player 2", "X", "#ff595e")
 
-	const getPlayer2 = () => createPlayer("Apple Toast", "X", "#ff595e")
+	// Change Player data
+	document.querySelector(".side-container").addEventListener("change", (event) => {
+		const element = event.target
 
-	// Update player
+		if (element.tagName !== "INPUT") return
+
+		const parent = element.closest(".player1, .player2")
+		if (!parent) return
+
+		const player = parent.classList.contains("player1") ? player1 : player2
+
+		if (element.type === "text") {
+			player.setName(element.value)
+
+			gameController.updateTurnStatus()
+		} else if (element.type === "color") {
+			player.setColor(element.value)
+
+			gameController.updateTurnStatus()
+			gameBoard.displayBoard()
+		}
+	})
+
+	const getPlayer1 = () => player1
+	const getPlayer2 = () => player2
 
 	return { getPlayer1, getPlayer2 }
 })()
 
 const gameController = (function () {
-	const player1 = player.getPlayer1()
+	let player1 = player.getPlayer1()
 	const player2 = player.getPlayer2()
 	let firstTurn = player1
 	let currentPlayer = firstTurn
@@ -83,7 +114,6 @@ const gameController = (function () {
 
 	const init = () => {
 		gameBoard.getCells().forEach((cell) => cell.addEventListener("click", handleClick))
-		// addEventListener("change", (event) => {})
 
 		startGame()
 	}
@@ -114,7 +144,7 @@ const gameController = (function () {
 		if (checkWin()) return
 
 		swapTurn()
-		gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`, currentPlayer.getColor())
+		updateTurnStatus()
 	}
 
 	const checkWin = () => {
@@ -157,7 +187,13 @@ const gameController = (function () {
 		firstTurn === player1 ? (firstTurn = player2) : (firstTurn = player1)
 	}
 
-	return { init, startGame, handleClick }
+	const updateTurnStatus = () => {
+		if (gameActive === true) {
+			gameBoard.displayStatusText(`It's ${currentPlayer.getName()}'s turn!`, currentPlayer.getColor())
+		}
+	}
+
+	return { init, startGame, handleClick, updateTurnStatus }
 })()
 
 gameController.init()
