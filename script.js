@@ -62,7 +62,7 @@ const player = (() => {
 	}
 
 	// Default players
-	const player1 = createPlayer("player 1", "O", "#4ba3c3")
+	const player1 = createPlayer("Player 1", "O", "#4ba3c3")
 	const player2 = createPlayer("Player 2", "X", "#ff595e")
 
 	// Change Player data
@@ -80,11 +80,13 @@ const player = (() => {
 			player.setName(element.value)
 
 			gameController.updateTurnStatus()
+			scoreboard.displayScore()
 		} else if (element.type === "color") {
 			player.setColor(element.value)
 
 			gameController.updateTurnStatus()
 			gameBoard.displayBoard()
+			scoreboard.displayScore()
 		}
 	})
 
@@ -94,12 +96,44 @@ const player = (() => {
 	return { getPlayer1, getPlayer2 }
 })()
 
+const scoreboard = (() => {
+	let player1Score = 0
+	let player2Score = 0
+
+	const getScore = () => {
+		return { player1Score, player2Score }
+	}
+
+	const addScore = (player) => {
+		if (player === "O") {
+			player1Score++
+		} else if (player === "X") {
+			player2Score++
+		}
+	}
+
+	const displayScore = () => {
+		document.getElementById("player1-name").textContent = player.getPlayer1().getName()
+		document.getElementById("player1-name").style.color = player.getPlayer1().getColor()
+		document.getElementById("player2-name").textContent = player.getPlayer2().getName()
+		document.getElementById("player2-name").style.color = player.getPlayer2().getColor()
+		document.getElementById("player1-score").textContent = player1Score
+		document.getElementById("player1-score").style.color = player.getPlayer1().getColor()
+		document.getElementById("player2-score").textContent = player2Score
+		document.getElementById("player2-score").style.color = player.getPlayer2().getColor()
+	}
+
+	return { getScore, addScore, displayScore }
+})()
+
 const gameController = (function () {
 	let player1 = player.getPlayer1()
 	const player2 = player.getPlayer2()
 	let firstTurn = player1
 	let currentPlayer = firstTurn
 	let gameActive = false
+	scoreboard.displayScore()
+	const restartButton = document.getElementById("restart")
 
 	const winConditions = [
 		[0, 1, 2], // Row 1
@@ -120,6 +154,7 @@ const gameController = (function () {
 
 	const startGame = () => {
 		gameActive = true
+		updateRestartButton()
 		currentPlayer = firstTurn
 
 		gameBoard.resetBoard()
@@ -129,6 +164,14 @@ const gameController = (function () {
 		// console
 		console.log("Start New Game!")
 		gameBoard.printBoard()
+	}
+
+	restartButton.addEventListener("click", function () {
+		startGame()
+	})
+
+	const updateRestartButton = () => {
+		gameActive === true ? (restartButton.style.display = "none") : (restartButton.style.display = "flex")
 	}
 
 	function handleClick(event) {
@@ -156,6 +199,9 @@ const gameController = (function () {
 			if (board[a] !== " " && board[a] == board[b] && board[b] == board[c]) {
 				gameBoard.displayStatusText(`${currentPlayer.getName()} Wins!`, currentPlayer.getColor())
 				gameActive = false
+				scoreboard.addScore(currentPlayer.getMarker())
+				scoreboard.displayScore()
+				updateRestartButton()
 				swapFirstTurn()
 				return true
 			}
@@ -164,6 +210,7 @@ const gameController = (function () {
 		if (!board.includes(" ")) {
 			gameBoard.displayStatusText("It's a draw!", "#70587c")
 			gameActive = false
+			updateRestartButton()
 			swapFirstTurn()
 			return true
 		}

@@ -13,13 +13,13 @@
 	<body>
 		<main>
 			<div class="scoreboard-container">
-				<h3 class="player1-scr">Player 1</h3>
+				<h3 id="player1-name">Player 1</h3>
 				<div class="score">
-					<h4 class="player1-scr">0</h4>
+					<h4 id="player1-score">0</h4>
 					<h5>-</h5>
-					<h4 class="player2-scr">0</h4>
+					<h4 id="player2-score">0</h4>
 				</div>
-				<h3 class="player2-scr">Player 2</h3>
+				<h3 id="player2-name">Player 2</h3>
 			</div>
 			<h1>TIC TAC TOE</h1>
 			<div class="board-container">
@@ -49,11 +49,11 @@
 		<aside>
 			<div class="side-container">
 				<div class="player1">
-					<input type="text" placeholder="player 1" />
+					<input type="text" maxlength="20" placeholder="player 1" />
 					<input type="color" value="#4ba3c3" />
 				</div>
 				<div class="player2">
-					<input type="text" placeholder="player 2" />
+					<input type="text" maxlength="20" placeholder="player 2" />
 					<input type="color" value="#ff595e" />
 				</div>
 			</div>
