@@ -23,6 +23,15 @@ li {
 	--Bittersweet: #ff595e;
 }
 
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(-360deg);
+	}
+}
+
 body {
 	height: 100vh;
 	grid-template-columns: 1fr, 5fr;
@@ -37,6 +46,32 @@ main {
 	justify-content: center;
 	align-items: center;
 	background-color: var(--violet);
+}
+
+.scoreboard-container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 2rem;
+	position: fixed;
+	top: 80px;
+}
+
+.score {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+}
+
+.scoreboard-container {
+	h3,
+	h4,
+	h5 {
+		color: var(--chinese-violet);
+		font-size: 2.5rem;
+		text-shadow: 2px 2px 2px rgb(0, 0, 0, 0.25);
+	}
 }
 
 h1,
@@ -73,6 +108,36 @@ h2 {
 	color: var(--Mint-cream);
 
 	&:hover {
+		border: 1px solid #f2f7f2;
+	}
+}
+
+#restart {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	bottom: 60px;
+	width: 60px;
+	height: 60px;
+	background-color: var(--chinese-violet);
+	fill: var(--violet);
+	border: none;
+	border-radius: 40px;
+	transition: transform 0.1s ease;
+
+	svg {
+		width: 60px;
+		height: 60px;
+		transition: transform 0.3s ease;
+
+		&:hover {
+			animation: spin 0.3s ease forwards;
+		}
+	}
+
+	&:hover {
+		transform: scale(1.1);
 		border: 1px solid #f2f7f2;
 	}
 }
